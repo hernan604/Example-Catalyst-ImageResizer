@@ -6,6 +6,22 @@ use Image::Resize;
 use MIME::Base64;
 use Catalyst::Controller::REST;
 
+=head1 SYNOPSIS
+
+This module allows your catalyst application to have an instant image resizer
+
+=head2 CONFIGURATION
+
+By default the plugin will read images from 
+
+  YourApp/root/static/images
+
+however, you can change that appending your Catalyst-App/resizer.conf with:
+
+  images_path "/home/username/perl/images/"
+
+=cut
+
 has required_params => (
     is      => 'ro',
     default => sub {
@@ -43,7 +59,16 @@ sub validate :Private {
     }
 
     #define filepath
-    $c->stash( file => $c->path_to( 'root', 'static', 'images' )->file( $c->req->params->{ image } )->stringify );
+    if ( $c->config->{images_path} ) {
+      #user has set a custom images_path on catalyst config
+      $c->stash( file => $c->path_to( '/' )
+        ->new( $c->config->{images_path} )
+        ->file( $c->req->params->{ image } )->stringify );
+    } else {
+      #use imagespath default from root/static/images
+      $c->stash( file => $c->path_to( 'root', 'static', 'images' )
+        ->file( $c->req->params->{ image } )->stringify );
+    }
 
     #check the file exists
     $c->detach( 'index_err', [ 404 ] ) if ! -e $c->stash->{ file } #file exists 
