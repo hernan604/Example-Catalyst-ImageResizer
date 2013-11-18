@@ -6,7 +6,7 @@ Quick example of RESTful catalyst image resizer
 
 =head2 Start the server
 
-  sh start_app.sh
+  sh start_app.sh 9999
 
 Then goto url: http://127.0.0.1:9999/resize-test
 
