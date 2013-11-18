@@ -21,6 +21,8 @@ requires 'HTTP::Request::Common';
 requires 'MIME::Base64';
 requires 'Image::Resize';
 requires 'JSON::XS';
+requires 'Catalyst::View::TT';
+requires 'Catalyst::Controller::REST';
 test_requires 'Test::More' => '0.88';
 catalyst;
 

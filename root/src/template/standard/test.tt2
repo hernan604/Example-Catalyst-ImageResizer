@@ -1,0 +1,47 @@
+Test
+
+<script>
+  $( document ).ready( function () {
+  
+    ( function() {  
+        var get_image = function( args ) {
+          $.ajax( {
+            url     : '/imgresize',
+            cache   : true,
+            headers : {
+                'content-type' : 'application/json'
+            },
+            data    : args.data,
+            success : function ( data ) {
+                $( args.target_elem ).attr( 'src', 'data:image/'+data.format+';base64,'+data.base64 )
+            },
+            type: 'GET'
+          } );
+        }
+
+
+        get_image( {
+            data: {
+                width : 100,
+                height: 200,
+                image : 'catalyst_logo.png'
+            },
+            target_elem: '.image1'
+        } );
+
+        get_image( {
+            data: {
+                width         : 100,
+                height        : 200,
+                image         : 'catalyst_logo.png',
+                proportional  : 0
+            },
+            target_elem: $('.image2')
+        } );
+    } )();
+
+  } ); 
+</script>
+
+<img class="image1" src="" alt="" />
+<img class="image2" src="" alt="" />

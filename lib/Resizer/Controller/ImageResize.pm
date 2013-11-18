@@ -20,9 +20,6 @@ Catalyst Controller.
 =cut
 
 
-=head2 index
-
-=cut
 
 has required_params => (
     is      => 'ro',
@@ -37,6 +34,10 @@ has allowed_formats => (
         [qw/jpeg png gif jpg/];
     }
 );
+
+=head2 index
+
+=cut
 
 sub index :Path( '/imgresize' ) :ActionClass('REST') { }
 
