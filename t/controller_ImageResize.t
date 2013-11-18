@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 use HTTP::Request::Common qw/POST/;
-use DDP;
+#use DDP;
 use Catalyst::Test 'Resizer';
 use Resizer::Controller::ImageResize;
 use JSON::XS;

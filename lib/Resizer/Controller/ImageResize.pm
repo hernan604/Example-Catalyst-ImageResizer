@@ -2,7 +2,7 @@ package Resizer::Controller::ImageResize;
 use Moose;
 use namespace::autoclean;
 use Image::Resize;
-use DDP;
+#use DDP;
 use MIME::Base64;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
@@ -23,15 +23,6 @@ Catalyst Controller.
 =head2 index
 
 =cut
-
-# sub index :Path('/imgresize') :Args(0) {
-#     my ( $self, $c ) = @_;
-# #   warn p $c->req->params;
-#     my $file  = $c->path_to( 'root', 'static', 'images' )->file( $c->req->params->{ image } )->stringify;
-#     my $image = Image::Resize->new( $file );
-#     my $gd    = $image->resize( $c->req->params->{ height }, $c->req->params->{ width } );
-#     $c->res->body( $gd->jpeg );
-# }
 
 has required_params => (
     is => 'rw',
