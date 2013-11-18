@@ -25,9 +25,16 @@ Catalyst Controller.
 =cut
 
 has required_params => (
-    is => 'rw',
+    is      => 'ro',
     default => sub {
         [ qw/image width height/ ]
+    }
+);
+
+has allowed_formats => (
+    is      => 'ro',
+    default => sub {
+        [qw/jpeg png gif jpg/];
     }
 );
 
@@ -51,12 +58,22 @@ sub validate :Private {
 sub index_GET {
     my ( $self, $c ) = @_;
     $c->forward( 'validate' );
-
     #resize the image
-    my $gd      = Image::Resize->new( $c->stash->{file} )->resize( $c->req->params->{ height }, $c->req->params->{ width } );
-    my $format  = ( exists $c->req->params->{ format } and $c->req->params->{ format } =~ m/^(jpeg|png|gif)$/ig )
+    my $gd      = Image::Resize
+                    ->new( $c->stash->{file} )
+                    ->resize( 
+                        $c->req->params->{ height }, 
+                        $c->req->params->{ width }, 
+                        ( exists $c->req->params->{ proportional }
+                             and $c->req->params->{ proportional } == 0 ) ? 0 : 1
+                    );
+    
+    #pipe join allowed formats for regex checking
+    my $allowed_fmt = join('|',@{$self->allowed_formats});
+
+    my $format  = ( exists $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
                 #take the format user passed
-                ? lc $c->req->params->{ format }
+                ? ( ( lc($c->req->params->{ format }) eq 'jpg' ) ? 'jpeg' :  lc $c->req->params->{ format } )
                 #use the default format
                 : 'jpeg';
 

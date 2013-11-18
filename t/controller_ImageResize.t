@@ -49,6 +49,24 @@ IMG
    my $decoded_res = decode_json( $res->{ _content } );
   ok( $decoded_res->{ base64 } eq $content_expected, "got expected image" );
   ok( $decoded_res->{ format } eq 'jpeg', "format is jpg" );
+
+  #now test the same thing, but pass a 'jpg' as format
+     $content = [
+      width  => 50,
+      height => 50,
+      image  => 'catalyst_logo.png',
+      format => 'jpg'
+  ];
+     $r     = HTTP::Request->new(
+                  GET =>
+                  '/imgresize/?'. POST('', [], Content => $content)->content ,
+                  [ 'content-type' => 'application/json' ] );
+     $res   = request( $r );
+  ok( $res->is_success, 'Request should succeed' );
+      $decoded_res = decode_json( $res->{ _content } );
+  ok( $decoded_res->{ base64 } eq $content_expected, "got expected image" );
+  ok( $decoded_res->{ format } eq 'jpeg', "format is jpg" );
+
 }
 
 IMG_AS_PNG: {
@@ -215,6 +233,87 @@ FAIL_TO_PASS_A_REQUIRED_PARAMS: {
     ok( $res->{_rc} == 400 , 'error thrown');
     is( decode_json($res->{_content})->{error} =~ m/Please pass all the required parameters.+/ig, 1 , 'got error message as expected' );
   }
+}
+
+IMG_AS_PNG_WITH_PROPORTION: {
+  my $content = [
+      width        => 50,
+      height       => 50,
+      image        => 'catalyst_logo.png',
+      format       => 'png',
+      proportional => 0,
+  ];
+  my $r     = HTTP::Request->new(
+                  GET =>
+                  '/imgresize/?'. POST('', [], Content => $content)->content ,
+                  [ 'content-type' => 'application/json' ] );
+  my $res   = request( $r );
+  ok( $res->is_success, 'Request should succeed' );
+
+my $content_expected = <<IMG;
+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
+IMG
+
+   my $img = decode_json( $res->{ _content } );
+  ok( $img->{ base64 } eq $content_expected, "got expected image" );
+  ok( $img->{ format } eq 'png', "format is png" );
 }
 
 done_testing();
