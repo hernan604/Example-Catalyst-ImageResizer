@@ -4,11 +4,49 @@
 
 Quick example of RESTful catalyst image resizer
 
+This example consists of 2 modules:
+
+
+1. ./ResizerRole/
+
+  The ResizerRole is basically a role that implements resizing.
+  It extends Catalyst::Controller::REST and implements the resizing methods
+
+2. ./Catalyst-App/
+
+  The Catalyst App is a restful example that consumes ResizerRole in controller:
+  Catalyst-App/lib/Resizer/Controller/ImageResize.pm
+
 =head2 Start the server
 
   sh start_app.sh 9999
 
-Then goto url: http://127.0.0.1:9999/resize-test
+For visualization, i created an entry point at url:
+
+  http://127.0.0.1:9999/resize-test
+
+Or, use this quick HTTP::Tiny ua to request a response
+
+  use HTTP::Tiny;
+  use DDP;
+  use HTTP::Request::Common qw/POST/;
+
+  my $ua       = HTTP::Tiny->new();
+  my $content = [
+    width  => 50,
+    height => 50,
+    image  => 'catalyst_logo.png'
+  ];
+  my $response = $ua->request(
+    'GET',
+    'http://127.0.0.1:9999/imgresize/?'. POST('', [], Content => $content)->content, {
+    headers => {
+      'content-type' => 'application/json'
+    },
+  } );
+
+  warn p $response;
+
 
 =head2 Tests
 
