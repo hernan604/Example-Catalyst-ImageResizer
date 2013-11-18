@@ -150,6 +150,17 @@ sub index_GET {
     );
 }
 
+=head2 index_err
+
+This method will take care of errors. Mainly used by 'validate' method
+
+It uses some error codes to set response error messages, ie:
+
+  403 => 'Please pass all the required parameters: '. join(', ',@{$self->required_params}),
+  404 => 'Image file does not exists or not enough permissions'
+
+=cut
+
 sub index_err :Private {
     my ( $self, $c, $error_code ) = @_;
     my $error_msg = {
