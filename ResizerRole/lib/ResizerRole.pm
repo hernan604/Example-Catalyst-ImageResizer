@@ -135,7 +135,7 @@ sub index_GET {
     my $allowed_fmt = join('|',@{$self->allowed_formats});
 
     #choose the format to render the image
-    my $format  = ( exists $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
+    my $format  = ( $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
                 #take the format user passed
                 ? ( ( lc($c->req->params->{ format }) eq 'jpg' ) ? 'jpeg' :  lc $c->req->params->{ format } )
                 #use the default format
@@ -158,8 +158,8 @@ sub index_err :Private {
     };
     $self->status_bad_request(
          $c,
-         message => ( exists $error_msg->{ $error_code } )
-                           ? $error_msg->{ $error_code }
+         message => ( $error_msg->{ $error_code } )
+                    ? $error_msg->{ $error_code }
                     : 'Something went wrong and your request cant be processed'
     );
 }
