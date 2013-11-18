@@ -194,7 +194,7 @@ IMG_THAT_DOESNT_EXISTS: {
   ok( decode_json($res->{_content})->{error} eq 'Image file does not exists' , 'got error message as expected' );
 }
 
-FAIL_TO_PASS_REQUIRED_PARAMS: {
+FAIL_TO_PASS_A_REQUIRED_PARAMS: {
   my @required_params = ( qw/width height image/ );
   my $content_default = [
       width  => 50,
