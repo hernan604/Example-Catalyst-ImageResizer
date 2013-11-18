@@ -1,0 +1,15 @@
+=encoding utf8
+
+=head1 DESCRIPTION
+
+Quick example of RESTful catalyst image resizer
+
+=head2 Start the server
+
+  sh start_app.sh
+
+Then goto url: http://127.0.0.1:9999/resize-test
+
+=head2 Tests
+
+  sh test.sh
