@@ -209,7 +209,7 @@ IMG_THAT_DOESNT_EXISTS: {
                   [ 'content-type' => 'application/json' ] );
   my $res   = request( $r );
   ok( $res->{_rc} == 400 , 'error thrown');
-  ok( decode_json($res->{_content})->{error} eq 'Image file does not exists' , 'got error message as expected' );
+  ok( decode_json($res->{_content})->{error} eq 'Image file does not exists or not enough permissions' , 'got error message as expected' );
 }
 
 FAIL_TO_PASS_A_REQUIRED_PARAMS: {

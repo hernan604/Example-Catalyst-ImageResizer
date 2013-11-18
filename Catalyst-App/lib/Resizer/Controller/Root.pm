@@ -31,7 +31,6 @@ The root page (/)
 sub test_page :Path('/resize-test') :Args(0) {
     my ( $self, $c ) = @_;
 
-    # Hello World
     $c->stash(
         template      => 'test.tt2',
         current_view  => 'Standard',
