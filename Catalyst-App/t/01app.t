@@ -5,6 +5,7 @@ use Test::More;
 
 use Catalyst::Test 'Resizer';
 
-ok( request('/')->is_success, 'Request should succeed' );
+#entry point to test resizer
+ok( request('/resize-test')->is_success, 'Request should succeed' );
 
 done_testing();
