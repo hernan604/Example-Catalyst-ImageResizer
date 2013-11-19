@@ -47,6 +47,10 @@ Or, use this quick HTTP::Tiny ua to request a response
 
   warn p $response;
 
+Other dependencies:
+
+  sudo apt-get install libpng3-dev libgif-dev libjpeg-dev libgd2-dev
+
 
 =head2 Tests
 
