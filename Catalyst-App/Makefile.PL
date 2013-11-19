@@ -23,6 +23,7 @@ requires 'Image::Resize';
 requires 'JSON::XS';
 requires 'Catalyst::View::TT';
 requires 'Catalyst::Controller::REST';
+requires 'Catalyst::Restarter';
 test_requires 'Test::More' => '0.88';
 catalyst;
 
