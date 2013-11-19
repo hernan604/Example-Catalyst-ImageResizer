@@ -62,19 +62,21 @@ sub validate :Private {
     SET_FILEPATH:{ 
         if ( $c->config->{images_path} ) {
           #user has set a custom images_path on catalyst config
-          $c->stash( file => $c->path_to( '/' )
-            ->new( $c->config->{images_path} )
-            ->file( $c->req->params->{ image } )->stringify );
+          $c->stash->{ plugin_resizer }->{ file } = 
+            $c->path_to( '/' )
+              ->new( $c->config->{images_path} )
+                ->file( $c->req->params->{ image } )->stringify ;
         } else {
           #use imagespath default from root/static/images
-          $c->stash( file => $c->path_to( 'root', 'static', 'images' )
-            ->file( $c->req->params->{ image } )->stringify );
+          $c->stash->{ plugin_resizer }->{ file } = 
+            $c->path_to( 'root', 'static', 'images' )
+              ->file( $c->req->params->{ image } )->stringify ;
         }
     }
 
     FILE_EXISTS: {
-        $c->detach( 'index_err', [ 404 ] ) if ! -e $c->stash->{ file } #file exists 
-                                           || ! -r $c->stash->{ file };#cant access file?
+        $c->detach( 'index_err', [ 404 ] ) if ! -e $c->stash->{ plugin_resizer }->{ file } #file exists 
+                                           || ! -r $c->stash->{ plugin_resizer }->{ file };#cant access file?
     }
 
     INTEGER_PARAMS:{ 
@@ -82,6 +84,7 @@ sub validate :Private {
         foreach my $param ( qw/height width/ ) {
             $c->detach( 'index_err', [402] ) 
                 if $c->req->params->{ $param } !~ m/^\d+$/g;
+            $c->stash->{ plugin_resizer }->{ $param } = $c->req->params->{ $param };
         }
     }
 
@@ -89,7 +92,7 @@ sub validate :Private {
         #pipe join allowed formats for regex checking
         my $allowed_fmt = join('|',@{$self->allowed_formats});
         #check the requested format
-        $c->stash->{format}  = ( $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
+        $c->stash->{ plugin_resizer }->{format}  = ( $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
                     #take the format user passed
                     ? ( ( lc($c->req->params->{ format }) eq 'jpg' ) ? 'jpeg' :  lc $c->req->params->{ format } )
                     #use the default format
@@ -97,7 +100,7 @@ sub validate :Private {
     }
 
     KEEP_PROPORTIONS: {
-        $c->stash->{ proportional } = 
+        $c->stash->{ plugin_resizer }->{ proportional } = 
             (   ! exists $c->req->params->{ proportional } 
              || ( exists $c->req->params->{ proportional } 
                and ( $c->req->params->{ proportional } == 1 
@@ -149,22 +152,11 @@ The images are processed with Image::Resize
 
 sub index_GET {
     my ( $self, $c ) = @_;
-
+    $c->stash->{ plugin_resizer } = {};
     #load image
     $c->forward( 'validate' );
 
-    my $image_args = {
-        file          => $c->stash->{ file },
-        format        => $c->stash->{ format },
-        proportional  => $c->stash->{ proportional },
-    };
-    
-    foreach my $param ( qw/height width/ ) {
-        $image_args->{ $param } = $c->req->params->{ $param }
-          if exists $c->req->params->{ $param };
-    }
-
-    my $result = $self->generate_base64( $image_args );
+    my $result = $self->generate_base64( $c->stash->{ plugin_resizer } );
     $self->status_ok(
          $c,
          entity => $result,
