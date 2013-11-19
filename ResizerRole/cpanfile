@@ -3,5 +3,15 @@ requires 'perl', '5.008005';
 # requires 'Some::Module', 'VERSION';
 
 on test => sub {
-    requires 'Test::More', '0.88';
+    test_requires 'Test::More', '0.88';
+    test_requires 'HTTP::Request::Common', 0;
+    test_requires 'JSON::XS', 0;
+    test_requires 'FindBin', 0;
+    test_requires 'Catalyst::Test', 0;
+    test_requires 'Catalyst::Runtime', 0;
+    test_requires 'FindBin', 0;
+    requires 'Moose', 0;
+    requires 'Image::Resize', 0;
+    requires 'MIME::Base64', 0;
+    requires 'Catalyst::Controller::REST', 0;
 };
