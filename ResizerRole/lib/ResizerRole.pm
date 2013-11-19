@@ -5,9 +5,13 @@ use Image::Resize;
 use MIME::Base64;
 use Catalyst::Controller::REST;
 
+our $VERSION = 0.01;
+
+# ABSTRACT: catalyst controller to resize images
+
 =head1 SYNOPSIS
 
-This module allows your catalyst application to have an instant image resizer
+This controller allows your catalyst application to have an instant image resizer
 
 =head2 CONFIGURATION
 
@@ -209,5 +213,11 @@ sub _error :Private {
                     : 'Something went wrong and your request cant be processed'
     );
 }
+
+=head2 TESTING
+
+A test server has been included inside dir t/ to test this controller.
+
+=cut
 
 1;
