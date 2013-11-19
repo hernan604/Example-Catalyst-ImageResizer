@@ -17,6 +17,11 @@ This example consists of 2 modules:
   The Catalyst App is a restful example that consumes ResizerRole in controller:
   Catalyst-App/lib/Resizer/Controller/ImageResize.pm
 
+=head2 Install dependencies first
+
+  cd ResizerRole/ && cpanm --installdeps .
+  cd Catalyst-App/ && cpanm --installdeps .
+
 =head2 Start the server
 
   sh start_app.sh 9999
