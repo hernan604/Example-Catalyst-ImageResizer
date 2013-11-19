@@ -67,6 +67,25 @@ IMG
   ok( $decoded_res->{ base64 } eq $content_expected, "got expected image" );
   ok( $decoded_res->{ format } eq 'jpeg', "format is jpg" );
 
+
+  #and now pass 'jpeg'
+     $content = [
+      width  => 50,
+      height => 50,
+      image  => 'catalyst_logo.png',
+      format => 'jpeg'
+  ];
+     $r     = HTTP::Request->new(
+                  GET =>
+                  '/imgresize/?'. POST('', [], Content => $content)->content ,
+                  [ 'content-type' => 'application/json' ] );
+     $res   = request( $r );
+  ok( $res->is_success, 'Request should succeed' );
+      $decoded_res = decode_json( $res->{ _content } );
+  ok( $decoded_res->{ base64 } eq $content_expected, "got expected image" );
+  ok( $decoded_res->{ format } eq 'jpeg', "format is jpg" );
+
+
 }
 
 IMG_AS_PNG: {
@@ -82,9 +101,6 @@ IMG_AS_PNG: {
                   [ 'content-type' => 'application/json' ] );
   my $res   = request( $r );
   ok( $res->is_success, 'Request should succeed' );
-# warn p $res;
-# use File::Slurp;
-# write_file( 'imagem.png', decode_json($res->{_content})->{ base64 } );
 
 my $content_expected = <<IMG;
 iVBORw0KGgoAAAANSUhEUgAAACMAAAAyCAIAAABZMfUwAAAJZklEQVRYha0Ya3BU5fWc7z52N5vN

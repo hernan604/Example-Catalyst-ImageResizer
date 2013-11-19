@@ -38,10 +38,67 @@ Test
             },
             target_elem: $('.image2')
         } );
+
+        get_image( {
+            data: {
+                width         : 100,
+                height        : 200,
+                image         : 'catalyst_logo.png',
+                format        : 'jpg',
+            },
+            target_elem: $('.image3-jpg')
+        } );
+
+        get_image( {
+            data: {
+                width         : 100,
+                height        : 200,
+                image         : 'catalyst_logo.png',
+                proportional  : 1,
+                format        : 'jpeg',
+            },
+            target_elem: $('.image4-jpeg')
+        } );
+
+        get_image( {
+            data: {
+                width         : 100,
+                height        : 200,
+                image         : 'catalyst_logo.png',
+                format        : 'gif',
+            },
+            target_elem: $('.image5-gif')
+        } );
+
+        get_image( {
+            data: {
+                width         : 100,
+                height        : 200,
+                image         : 'catalyst_logo.png',
+                proportional  : 1,
+                format        : 'png',
+            },
+            target_elem: $('.image6-png')
+        } );
     } )();
 
   } ); 
 </script>
 
-<img class="image1" src="" alt="" />
-<img class="image2" src="" alt="" />
+<br>default, with some width and height:
+<br><img class="image1"       src="" title="image1" />
+
+<br>proportional inactive:
+<br><img class="image2"       src="" title="image2" />
+
+<br>jpg:
+<br><img class="image3-jpg"   src="" title="image3-jpg" />
+
+<br>jpeg:
+<br><img class="image4-jpeg"  src="" title="image4-jpeg" />
+
+<br>gif:
+<br><img class="image5-gif"   src="" title="image5-gif" />
+
+<br>png:
+<br><img class="image6-png"   src="" title="image6-png" />
