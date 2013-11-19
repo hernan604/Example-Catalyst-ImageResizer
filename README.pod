@@ -9,7 +9,7 @@ This example consists of 2 modules:
 
 1. ./ResizerRole/
 
-  The ResizerRole implements resizing (its not a role anymore, its a class).
+  The ResizerRole implements resizing (its not a role anymore, its a controller class).
   It extends Catalyst::Controller::REST and implements the resizing methods
 
 2. ./Catalyst-App/
