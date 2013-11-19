@@ -3,11 +3,14 @@ use warnings;
 use Test::More;
 use HTTP::Request::Common qw/POST/;
 use Catalyst::Test 'Resizer';
-use Resizer::Controller::ImageResize;
 use JSON::XS;
-use ResizerRole;
 
-RETURN_DEFAULT_TYPE_JPG: {
+## It has been tested inside ResizerRole module.
+## However, the same tests could stay here too... 
+## 
+## * ADD TESTS INSIDE: ../ResizerRole/t/basic.t
+
+    RETURN_DEFAULT_TYPE_JPG: {
   my $content = [
       width  => 50,
       height => 50,
