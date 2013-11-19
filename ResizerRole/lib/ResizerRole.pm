@@ -3,7 +3,6 @@ use base 'Catalyst::Controller::REST';
 use Moose;
 use Image::Resize;
 use MIME::Base64;
-use Catalyst::Controller::REST;
 
 our $VERSION = 0.01;
 
