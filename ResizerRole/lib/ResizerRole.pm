@@ -2,7 +2,6 @@ package ResizerRole;
 use base 'Catalyst::Controller::REST';
 use Moose;
 use Image::Resize;
-#use DDP;
 use MIME::Base64;
 use Catalyst::Controller::REST;
 
@@ -54,25 +53,58 @@ sub validate :Private {
     my ( $self, $c, $file ) = @_;
 
     #check required parameters were passed
-    foreach my $param ( @{ $self->required_params } ) {
-        $c->detach( 'index_err', [ 403 ] ) if ! exists $c->req->params->{ $param };
+    REQUIRED_PARAMS: {
+        foreach my $param ( @{ $self->required_params } ) {
+            $c->detach( 'index_err', [ 403 ] ) if ! exists $c->req->params->{ $param };
+        }
     }
 
-    #define filepath
-    if ( $c->config->{images_path} ) {
-      #user has set a custom images_path on catalyst config
-      $c->stash( file => $c->path_to( '/' )
-        ->new( $c->config->{images_path} )
-        ->file( $c->req->params->{ image } )->stringify );
-    } else {
-      #use imagespath default from root/static/images
-      $c->stash( file => $c->path_to( 'root', 'static', 'images' )
-        ->file( $c->req->params->{ image } )->stringify );
+    SET_FILEPATH:{ 
+        if ( $c->config->{images_path} ) {
+          #user has set a custom images_path on catalyst config
+          $c->stash( file => $c->path_to( '/' )
+            ->new( $c->config->{images_path} )
+            ->file( $c->req->params->{ image } )->stringify );
+        } else {
+          #use imagespath default from root/static/images
+          $c->stash( file => $c->path_to( 'root', 'static', 'images' )
+            ->file( $c->req->params->{ image } )->stringify );
+        }
     }
 
-    #check the file exists
-    $c->detach( 'index_err', [ 404 ] ) if ! -e $c->stash->{ file } #file exists 
-                                       || ! -r $c->stash->{ file };#cant access file?
+    FILE_EXISTS: {
+        $c->detach( 'index_err', [ 404 ] ) if ! -e $c->stash->{ file } #file exists 
+                                           || ! -r $c->stash->{ file };#cant access file?
+    }
+
+    INTEGER_PARAMS:{ 
+        #width and height must be integer
+        foreach my $param ( qw/height width/ ) {
+            $c->detach( 'index_err', [402] ) 
+                if $c->req->params->{ $param } !~ m/^\d+$/g;
+        }
+    }
+
+    VALIDATE_FORMAT:{
+        #pipe join allowed formats for regex checking
+        my $allowed_fmt = join('|',@{$self->allowed_formats});
+        #check the requested format
+        $c->stash->{format}  = ( $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
+                    #take the format user passed
+                    ? ( ( lc($c->req->params->{ format }) eq 'jpg' ) ? 'jpeg' :  lc $c->req->params->{ format } )
+                    #use the default format
+                    : 'jpeg';
+    }
+
+    KEEP_PROPORTIONS: {
+        $c->stash->{ proportional } = 
+            (   ! exists $c->req->params->{ proportional } 
+             || ( exists $c->req->params->{ proportional } 
+               and ( $c->req->params->{ proportional } == 1 
+                  || $c->req->params->{ proportional } eq 'true' ) ) )
+            ? 1 #default
+            : 0;
+    }
 }
 
 =head2 index_GET
@@ -121,33 +153,44 @@ sub index_GET {
     #load image
     $c->forward( 'validate' );
 
-    #load the image
-    my $gd      = Image::Resize
-                    ->new( $c->stash->{file} )
-                    ->resize( 
-                        $c->req->params->{ height }, 
-                        $c->req->params->{ width }, 
-                        ( exists $c->req->params->{ proportional }
-                             and $c->req->params->{ proportional } == 0 ) ? 0 : 1
-                    );
+    my $image_args = {
+        file          => $c->stash->{ file },
+        format        => $c->stash->{ format },
+        proportional  => $c->stash->{ proportional },
+    };
     
-    #pipe join allowed formats for regex checking
-    my $allowed_fmt = join('|',@{$self->allowed_formats});
+    foreach my $param ( qw/height width/ ) {
+        $image_args->{ $param } = $c->req->params->{ $param }
+          if exists $c->req->params->{ $param };
+    }
 
-    #choose the format to render the image
-    my $format  = ( $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
-                #take the format user passed
-                ? ( ( lc($c->req->params->{ format }) eq 'jpg' ) ? 'jpeg' :  lc $c->req->params->{ format } )
-                #use the default format
-                : 'jpeg';
-
+    my $result = $self->generate_base64( $image_args );
     $self->status_ok(
          $c,
-         entity => {
-             base64      => encode_base64( $gd->$format ),
-             format      => $format,
-         },
+         entity => $result,
     );
+}
+
+#isolated inside a method so i can test it
+sub generate_base64 {
+    my ( $self, $args ) = @_; 
+
+    #load the image
+    my $gd      = Image::Resize
+                    ->new( $args->{file} )
+                    ->resize( 
+                        $args->{ height }, 
+                        $args->{ width }, 
+                        $args->{ proportional }
+                    );
+    
+
+    my $format = $args->{ format };
+
+    return {
+        base64      => encode_base64( $gd->$format ),
+        format      => $format,
+    };
 }
 
 =head2 index_err
@@ -164,8 +207,9 @@ It uses some error codes to set response error messages, ie:
 sub index_err :Private {
     my ( $self, $c, $error_code ) = @_;
     my $error_msg = {
+        402 => 'params height and width must be integer',
         403 => 'Please pass all the required parameters: '. join(', ',@{$self->required_params}),
-        404 => 'Image file does not exists or not enough permissions'
+        404 => 'Image file does not exists or not enough permissions',
     };
     $self->status_bad_request(
          $c,
