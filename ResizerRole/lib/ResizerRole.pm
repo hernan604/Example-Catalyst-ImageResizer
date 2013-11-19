@@ -45,7 +45,7 @@ This method will make the following validations:
   - the required image file exists?
   - do i have permission to read the file?
 
-If if fails to comply these verifications, will detach to index_err
+If if fails to comply these verifications, will detach to _error
 
 =cut
 
@@ -55,7 +55,7 @@ sub validate :Private {
     #check required parameters were passed
     REQUIRED_PARAMS: {
         foreach my $param ( @{ $self->required_params } ) {
-            $c->detach( 'index_err', [ 403 ] ) if ! exists $c->req->params->{ $param };
+            $c->detach( '_error', [ 403 ] ) if ! exists $c->req->params->{ $param };
         }
     }
 
@@ -75,14 +75,14 @@ sub validate :Private {
     }
 
     FILE_EXISTS: {
-        $c->detach( 'index_err', [ 404 ] ) if ! -e $c->stash->{ plugin_resizer }->{ file } #file exists 
-                                           || ! -r $c->stash->{ plugin_resizer }->{ file };#cant access file?
+        $c->detach( '_error', [ 404 ] ) if ! -e $c->stash->{ plugin_resizer }->{ file } #file exists 
+                                        || ! -r $c->stash->{ plugin_resizer }->{ file };#cant access file?
     }
 
     INTEGER_PARAMS:{ 
         #width and height must be integer
         foreach my $param ( qw/height width/ ) {
-            $c->detach( 'index_err', [402] ) 
+            $c->detach( '_error', [402] ) 
                 if $c->req->params->{ $param } !~ m/^\d+$/g;
             $c->stash->{ plugin_resizer }->{ $param } = $c->req->params->{ $param };
         }
@@ -93,20 +93,20 @@ sub validate :Private {
         my $allowed_fmt = join('|',@{$self->allowed_formats});
         #check the requested format
         $c->stash->{ plugin_resizer }->{format}  = ( $c->req->params->{ format } and $c->req->params->{ format } =~ m/^($allowed_fmt)$/ig )
-                    #take the format user passed
-                    ? ( ( lc($c->req->params->{ format }) eq 'jpg' ) ? 'jpeg' :  lc $c->req->params->{ format } )
-                    #use the default format
-                    : 'jpeg';
+             #take the format user passed
+             ? ( ( lc($c->req->params->{ format }) eq 'jpg' ) ? 'jpeg' :  lc $c->req->params->{ format } )
+             #use the default format
+             : 'jpeg';
     }
 
     KEEP_PROPORTIONS: {
         $c->stash->{ plugin_resizer }->{ proportional } = 
             (   ! exists $c->req->params->{ proportional } 
              || ( exists $c->req->params->{ proportional } 
-               and ( $c->req->params->{ proportional } == 1 
-                  || $c->req->params->{ proportional } eq 'true' ) ) )
-            ? 1 #default
-            : 0;
+                   and ( $c->req->params->{ proportional } == 1 
+                      || $c->req->params->{ proportional } eq 'true' ) ) )
+             ? 1 #default
+             : 0;
     }
 }
 
@@ -153,13 +153,12 @@ The images are processed with Image::Resize
 sub index_GET {
     my ( $self, $c ) = @_;
     $c->stash->{ plugin_resizer } = {};
-    #load image
+    
     $c->forward( 'validate' );
 
-    my $result = $self->generate_base64( $c->stash->{ plugin_resizer } );
     $self->status_ok(
          $c,
-         entity => $result,
+         entity => $self->generate_base64( $c->stash->{ plugin_resizer } ),
     );
 }
 
@@ -185,7 +184,7 @@ sub generate_base64 {
     };
 }
 
-=head2 index_err
+=head2 _error
 
 This method will take care of errors. Mainly used by 'validate' method
 
@@ -196,7 +195,7 @@ It uses some error codes to set response error messages, ie:
 
 =cut
 
-sub index_err :Private {
+sub _error :Private {
     my ( $self, $c, $error_code ) = @_;
     my $error_msg = {
         402 => 'params height and width must be integer',

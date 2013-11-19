@@ -2,11 +2,9 @@ use strict;
 use warnings;
 use Test::More;
 use HTTP::Request::Common qw/POST/;
-#use DDP;
 use Catalyst::Test 'Resizer';
 use Resizer::Controller::ImageResize;
 use JSON::XS;
-
 use ResizerRole;
 
 RETURN_DEFAULT_TYPE_JPG: {
@@ -207,6 +205,37 @@ IMG_AS_PNG_WITH_PROPORTION: {
    my $img = decode_json( $res->{ _content } );
   ok( $img->{ base64 } eq $content_expected->{base64}, "got expected image" );
   ok( $img->{ format } eq 'png', "format is png" );
+}
+
+HEIGHT_AND_WIDTH_NOT_AS_INTEGER:{
+
+    HEIGHT: { 
+        my $content = [
+            width  => 50,
+            height => 'fifty',
+            image  => 'catalyst_logo.png'
+        ];
+        my $r     = HTTP::Request->new(
+                        GET =>
+                        '/imgresize/?'. POST('', [], Content => $content)->content ,
+                        [ 'content-type' => 'application/json' ] );
+        my $res   = request( $r );
+        ok( decode_json($res->{_content})->{error} eq 'params height and width must be integer' , 'width cant be string' );
+    }
+
+    WIDTH: { 
+        my $content = [
+            width  => 'fifty',
+            height => 50,
+            image  => 'catalyst_logo.png'
+        ];
+        my $r     = HTTP::Request->new(
+                        GET =>
+                        '/imgresize/?'. POST('', [], Content => $content)->content ,
+                        [ 'content-type' => 'application/json' ] );
+        my $res   = request( $r );
+        ok( decode_json($res->{_content})->{error} eq 'params height and width must be integer' , 'width cant be string' );
+    }
 }
 
 done_testing();
